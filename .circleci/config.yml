@@ -21,7 +21,7 @@ jobs:
               command: |
                 aws configure set aws_access_key_id $AWS_ACCESS_KEY
                 aws configure set aws_secret_access_key $SECRET_AWS_ACCESS_KEY
-                aws configure set default.region us-east-1
+                aws configure set default.region $REGION
           - run:
               name: Deploy Cloudformation Stack
               command: |
@@ -46,22 +46,22 @@ jobs:
           - run:
               name: Install Dependencies
               command: |
-                cd LawnNannyWeb
+                cd my-portfolio
                 npm install --only=dev
                 npm install
           - run:
               name: Added domainRequests.json
               command: |
-                touch ./LawnNannyWeb/src/domainRequests.json
-                echo "{}" >> ./LawnNannyWeb/src/domainRequests.json
+                touch ./my-portfolio/src/domainRequests.json
+                echo "{}" >> ./my-portfolio/src/domainRequests.json
           - run:
               name: Unit Tests For React
               command: |
-                cd LawnNannyWeb && npm run test
+                cd my-portfolio && npm run test
           - run:
               name: Build React
               command: |
-                cd LawnNannyWeb && npm run build
+                cd my-portfolio && npm run build
           - run:
               name: Install AWS CLI
               command: |
@@ -69,13 +69,13 @@ jobs:
           - run:
               name: Configure AWS CLI to Run as Admin
               command: |
-                  aws configure set aws_access_key_id $adminAccessKey
-                  aws configure set aws_secret_access_key $adminSecretAccessKey
-                  aws configure set default.region us-east-1
+                  aws configure set aws_access_key_id $AWS_ACCESS_KEY
+                  aws configure set aws_secret_access_key $SECRET_AWS_ACCESS_KEY
+                  aws configure set default.region $REGION
           - run:
               name: Ship Build File To S3 Bucket
               command: |
-                 cd LawnNannyWeb && aws s3 mv ./build s3://${BucketName} --recursive --acl public-read-write
+                 cd my-portfolio && aws s3 mv ./build s3://${FrontendDeploymentBucket} --recursive --acl public-read-write
 workflows:
     version: 2
     build_and_test:

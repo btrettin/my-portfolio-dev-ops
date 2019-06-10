@@ -1,9 +1,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Terra Cloud
+Description: Portfolio Cloud
 Parameters:
     BucketNameArgument:
-        Type: String
-    LambdaS3BucketName:
         Type: String
     DomainName:
       Type: String
@@ -25,15 +23,10 @@ Resources:
                 -
                     AttributeName: UserName
                     KeyType: HASH
-    TerraS3:
+    BenTrettinPortfolioS3:
         Type: AWS::S3::Bucket
         Properties:
             BucketName: !Ref BucketNameArgument
-            AccessControl: PublicRead
-    TerraS3LambdaBucket:
-        Type: AWS::S3::Bucket
-        Properties:
-            BucketName: !Ref LambdaS3BucketName
             AccessControl: PublicRead
     CloudFrontOriginAccessIdentity:
         Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
@@ -50,7 +43,7 @@ Resources:
             Type: A
             AliasTarget:
               DNSName: !GetAtt [CloudFront, DomainName]
-              HostedZoneId: Z2FDTNDATAQYW2
+              HostedZoneId: ZJ7PTWCKXS07
     CloudFront:
         Type: AWS::CloudFront::Distribution
         Properties:
@@ -70,13 +63,13 @@ Resources:
                   SslSupportMethod: sni-only
                   MinimumProtocolVersion: TLSv1
                 DefaultCacheBehavior:
-                  TargetOriginId: S3-Website-terras3bucket.s3-website-us-east-1.amazonaws.com
+                  TargetOriginId: S3-Website-FrontendDeploymentBucket.s3-website-us-east-1.amazonaws.com
                   ViewerProtocolPolicy: redirect-to-https
                   ForwardedValues:
                       QueryString: true
                 Origins:
-                - DomainName: !GetAtt [TerraS3, DomainName]
-                  Id: S3-Website-terras3bucket.s3-website-us-east-1.amazonaws.com
+                - DomainName: !GetAtt [BenTrettinPortfolioS3, DomainName]
+                  Id: S3-Website-FrontendDeploymentBucket.s3-website-us-east-1.amazonaws.com
                   S3OriginConfig:
                       OriginAccessIdentity: !Sub
                         - origin-access-identity/cloudfront/${IDOfOriginAccessIdentity}
