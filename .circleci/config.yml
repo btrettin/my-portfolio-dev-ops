@@ -8,6 +8,15 @@ jobs:
         - image: docker:17.05.0-ce-git
     steps:
         - checkout
+         - run:
+          name: Install dependencies
+          working_directory: /
+          command: |
+            apt-get -y -qq update
+            apt-get -y -qq install python3.4-dev
+            curl -O https://bootstrap.pypa.io/get-pip.py
+            python3.4 get-pip.py --user
+            pip install awscli --upgrade --user
         - run:
             name: Configure AWS CLI to Run as Admin
             command: |
