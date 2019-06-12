@@ -25,7 +25,7 @@ jobs:
         - run:
             name: Deploy Portfolio Frontend Stack
             command: |
-             aws cloudformation deploy --template-file portfolioFrontendStack.yaml
+             aws cloudformation deploy --template-file portfolioFrontendStack.yaml --stack-name PortfolioFrontendStack 
             no_output_timeout: 1h
 
   deploy_code_react_to_cloud_front:
