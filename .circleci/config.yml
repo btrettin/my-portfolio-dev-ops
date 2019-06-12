@@ -19,13 +19,13 @@ jobs:
         - run:
             name: Configure AWS CLI to Run as Admin
             command: |
-                aws configure set aws_access_key_id $key
-                aws configure set aws_secret_access_key $secret
+                aws configure set aws_access_key_id $adminAccessKey
+                aws configure set aws_secret_access_key $adminSecretAccessKey
                 aws configure set default.region $REGION
         - run:
             name: Deploy Portfolio Frontend Stack
             command:
-             aws cloudformation deploy --template-file portfolioFrontendStack.yaml --stack-name PortfolioFrontendStack --no-fail-on-empty-changeset --parameter-overrides BucketNameArgument=portfoliobucket DomainName=www.bentrettin.com HostedZoneId=ZJ7PTWCKXS07 AcmCertificate=arn:aws:acm:us-east-1:655915645761:certificate/e776bf92-1792-4cbb-b985-23feed4bc489
+             aws cloudformation deploy --template-file portfolioFrontendStack.yaml --stack-name PortfolioFrontendStack --no-fail-on-empty-changeset --parameter-overrides BucketNameArgument=portfoliobucket DomainName=www.bentrettin.com HostedZoneId=ZJ7PTWCKXS07
             no_output_timeout: 1h
 
   deploy_code_react_to_cloud_front:
