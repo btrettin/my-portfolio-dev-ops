@@ -10,27 +10,6 @@ Parameters:
     AcmCertificate:
       Type: String
 Resources:
-    BenTrettinPortfolioS3:
-        Type: AWS::S3::Bucket
-        Properties:
-            BucketName: !Ref BucketNameArgument
-            AccessControl: PublicRead
-    CloudFrontOriginAccessIdentity:
-        Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
-        Properties:
-             CloudFrontOriginAccessIdentityConfig:
-                 Comment: Cloud Front Origin Access
-    AliasRecordsForDomainToCloudFront:
-      Type: AWS::Route53::RecordSetGroup
-      Properties:
-        Comment: Points a domain name to cloudfront
-        HostedZoneId: !Ref HostedZoneId
-        RecordSets:
-          - Name: !Ref DomainName
-            Type: A
-            AliasTarget:
-              DNSName: !GetAtt [CloudFront, DomainName]
-              HostedZoneId: ZJ7PTWCKXS07
     CloudFront:
         Type: AWS::CloudFront::Distribution
         Properties:
