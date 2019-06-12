@@ -3,9 +3,6 @@ orbs:
   aws-cli: circleci/aws-cli@0.1.9
 jobs:
   deploy_front_end_infra:
-    working_directory: /app
-    docker:
-        - image: docker:17.05.0-ce-git
     docker:
       - image: circleci/python:2.7-jessie
     working_directory: ~/circleci-docs
