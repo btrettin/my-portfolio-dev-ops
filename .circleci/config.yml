@@ -2,34 +2,34 @@ version: 2.1
 orbs:
   aws-cli: circleci/aws-cli@0.1.9
 jobs:
-  deploy_aws_cloud_formation:
-      working_directory: /app
-      docker:
-          - image: docker:17.05.0-ce-git
-      steps:
-          - checkout
-          - run:
-              name: Install Dependencies
-              command: |
-                apk add --no-cache \
-                    py-pip=9.0.0-r1
-                pip install \
-                    docker-compose==1.12.0 \
-                    awscli==1.16.113
-          - run:
-              name: Configure AWS CLI With Ben as User
-              command: |
+  deploy_front_end_infra:
+    working_directory: /app
+    docker:
+        - image: docker:17.05.0-ce-git
+    steps:
+        - checkout
+        - run:
+            name: Install Dependencies
+            command: |
+              apk add --no-cache \
+                  py-pip=9.0.0-r1
+              pip install \
+                  docker-compose==1.12.0 \
+                  awscli==1.16.113
+        - run:
+            name: Configure AWS CLI to Run as Admin
+            command: |
                 aws configure set aws_access_key_id $AWS_ACCESS_KEY
                 aws configure set aws_secret_access_key $SECRET_AWS_ACCESS_KEY
-                aws configure set default.region us-east-1
-          - run:
-              name: Deploy Cloudformation Stack
-              command: |
-               DomainParentHostedZoneID=$(aws route53 list-hosted-zones-by-name --query "(HostedZones[?Name=='bentrettin.com.'])[0].Id" --output text)
-               aws cloudformation deploy --template-file portfolioFrontendStack.yaml --stack-name PortfolioStack --no-fail-on-empty-changeset --parameter-overrides BucketNameArgument=${FrontendDeploymentBucket} DomainName=www.bentrettin.com HostedZoneId=${DomainParentHostedZoneID} AcmCertificate=arn:aws:acm:us-east-1:655915645761:certificate/e776bf92-1792-4cbb-b985-23feed4bc489
-              no_output_timeout: 1h
+                aws configure set default.region $REGION
+        - run:
+            name: Deploy Portfolio Frontend Stack
+            command: |
+             DomainParentHostedZoneID=$(aws route53 list-hosted-zones-by-name --query "(HostedZones[?Name=='bentrettin.com.'])[0].Id" --output text)
+             aws cloudformation deploy --template-file portfolioFrontendStack.yaml --stack-name PortfolioFrontendStack --no-fail-on-empty-changeset --parameter-overrides BucketNameArgument=${FrontendDeploymentBucket} DomainName=www.bentrettin.com HostedZoneId=${DomainParentHostedZoneID} AcmCertificate=${CertificateARN}
+            no_output_timeout: 1h
 
-  deploy_react_to_cloud_front:
+  deploy_code_react_to_cloud_front:
       working_directory: ~/app
       docker:
           - image: circleci/node:8.11.0
@@ -38,7 +38,7 @@ jobs:
           - run:
               name: Clone React Repo
               command: |
-                git clone https://github.com/btrettin/my-portfolio.git
+                git clone https://github.com/btrettin/my-portfolio
           - run:
               name: update-npm
               command: 'sudo npm install -g npm@latest'
@@ -51,8 +51,8 @@ jobs:
           - run:
               name: Added domainRequests.json
               command: |
-                touch ./my-portfolio/src/domainRequests.json
-                echo "{}" >> ./my-portfolio/src/domainRequests.json
+                touch ./LawnNannyWeb/src/domainRequests.json
+                echo "{}" >> ./LawnNannyWeb/src/domainRequests.json
           - run:
               name: Unit Tests For React
               command: |
@@ -70,16 +70,21 @@ jobs:
               command: |
                   aws configure set aws_access_key_id $AWS_ACCESS_KEY
                   aws configure set aws_secret_access_key $SECRET_AWS_ACCESS_KEY
-                  aws configure set default.region us-east-1
+                  aws configure set default.region $REGION
           - run:
               name: Ship Build File To S3 Bucket
               command: |
-                 cd my-portfolio && aws s3 mv ./build s3://${FrontendDeploymentBucket} --recursive --acl public-read-write
+                 aws configure set aws_access_key_id $AWS_ACCESS_KEY
+                 aws configure set aws_secret_access_key $SECRET_AWS_ACCESS_KEY
+                 aws configure set default.region $REGION
+                 cd my-portfolio
+                 echo $FrontendDeploymentBucket
+                 aws s3 mv ./build s3://${FrontendDeploymentBucket} --recursive --acl public-read-write
 workflows:
     version: 2
     build_and_test:
         jobs:
-            - deploy_aws_cloud_formation
-            - deploy_react_to_cloud_front:
+            - deploy_front_end_infra
+            - deploy_code_react_to_cloud_front:
                 requires:
-                    - deploy_aws_cloud_formation
+                  - deploy_front_end_infra
