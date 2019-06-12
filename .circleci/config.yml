@@ -3,14 +3,19 @@ orbs:
   aws-cli: circleci/aws-cli@0.1.9
 jobs:
   deploy_front_end_infra:
+    working_directory: /app
     docker:
-      - image: circleci/python:2.7-jessie
-    working_directory: ~/circleci-docs
+        - image: docker:17.05.0-ce-git
     steps:
         - checkout
         - run:
-            name: Install awscli
-            command: sudo pip install awscli
+            name: Install Dependencies
+            command: |
+              apk add --no-cache \
+                  py-pip=9.0.0-r1
+              pip install \
+                  docker-compose==1.12.0 \
+                  awscli==1.16.113
         - run:
             name: Configure AWS CLI to Run as Admin
             command: |
